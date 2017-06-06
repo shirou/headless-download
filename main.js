@@ -16,21 +16,18 @@ function onPageLoad(Runtime, urls) {
         fs.mkdirSync(root);
     }
 
-    download(urls, root)
-        .on('invalid', function (e) {
-          console.log(e.url + ' is invalid');
-        });
+    try{
+/*
+      download(urls, root)
+          .on('invalid', function (e) {
+            console.log(e.url + ' is invalid');
+          });
+*/
+    } catch(err) {
+      console.log(err);
+    }
   });
 }
-
-function Replace(Runtime, root, dom) {
-  const js = "document.querySelector('[src]')";
-  // ページ内で JS の式を評価する。
-  return Runtime.evaluate({expression: js}).then(result => {
-    console.log(result);
-  });
-}
-
 
 CDP((client) => {
   // extract domains
@@ -39,16 +36,38 @@ CDP((client) => {
 
   // setup handlers
   Network.requestWillBeSent((params) => {
-    urls.push(params.request.url);
+    if (params.request.url.length < 30){
+      urls.push(params.request.url);
+    }
   });
   Page.loadEventFired(() => {
     onPageLoad(Runtime, urls).then(() => {
-      return DOM.getDocument(-1);
+      return DOM.enable();
+    }).then(() => {
+      return DOM.getDocument();
     }).then((dom) => {
-      return DOM.getOuterHTML(dom.root);
-    }).then((html) => {
-      fs.writeFile(root + ".html", html.outerHTML);
-      client.close();
+      return DOM.querySelectorAll({
+        nodeId: dom.root.nodeId,
+        selector: "[src]"
+      }).then((result) => {
+        result.nodeIds.forEach((n) => {
+          DOM.getAttributes({nodeId: n}).then((node) => {
+            node.attributes.forEach((attr) => {
+              DOM.setAttributeValue({
+                nodeId: n,
+                name: "src",
+                value: "hoge:" + attr,
+              });
+            });
+          });
+        });
+        return DOM.getDocument();
+      }).then(()=>{
+        return DOM.getOuterHTML({nodeId: dom.root.nodeId});
+      }).then((html) => {
+        fs.writeFile(root + ".html", html.outerHTML);
+        client.close();
+      });
     }).catch((err) => {
       console.error(err);
     });
