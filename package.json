@@ -1,0 +1,16 @@
+{
+  "name": "headless",
+  "version": "1.0.0",
+  "description": "headless save",
+  "main": "main.js",
+  "dependencies": {
+    "chrome-remote-interface": "^0.23.1",
+    "url-download": "0.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "WAKAYAMA Shirou",
+  "license": "MIT"
+}
