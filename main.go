@@ -145,7 +145,6 @@ func download(reqURI, root string) error {
 		return err
 	}
 	defer file.Close()
-	// Use io.Copy to just dump the resp body to the file. This supports huge files
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
 		return err
@@ -153,7 +152,26 @@ func download(reqURI, root string) error {
 	return nil
 }
 
+// add some utf-8 in the html entitiy to detect code
+func setEncodeDetector(remote *godet.RemoteDebugger) error {
+	res, err := remote.QuerySelector(1, "html")
+	if err != nil {
+		return err
+	}
+	nodeId, ok := res["nodeId"].(float64)
+	if !ok {
+		return fmt.Errorf("nodeId get failed")
+	}
+
+	if err := remote.SetAttributeValue(int(nodeId), "l", "美乳"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func writeBody(remote *godet.RemoteDebugger, filename string) error {
+	setEncodeDetector(remote)
+
 	body, err := remote.GetOuterHTML(1)
 	if err != nil {
 		return err
@@ -186,7 +204,6 @@ func mergeURLs(orig, new []string) []string {
 	}
 
 	return append(orig, appending...)
-
 }
 
 func main() {
@@ -206,14 +223,13 @@ func main() {
 	var urls []string
 
 	remote.CallbackEvent("Network.requestWillBeSent", func(params godet.Params) {
-		fmt.Println(params)
 		req, ok := params["request"].(map[string]interface{})
 		if !ok {
 			return
 		}
 
 		url, ok := req["url"].(string)
-		if ok { // && willDownload(url) {
+		if ok {
 			urls = append(urls, url)
 		}
 	})
