@@ -52,7 +52,6 @@ var filter = []string{
 }
 
 func willDownload(pathURL string) bool {
-	fmt.Println(pathURL)
 	url, err := url.Parse(pathURL)
 	if err != nil {
 		return false
@@ -167,7 +166,7 @@ func main() {
 	}
 	root := u.Host
 
-	remote, _ := godet.Connect("localhost:9222", true)
+	remote, _ := godet.Connect("localhost:9222", false)
 	defer remote.Close()
 
 	var wg sync.WaitGroup
