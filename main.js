@@ -50,8 +50,8 @@ CDP((client) => {
         nodeId: dom.root.nodeId,
         selector: "[src]"
       }).then((result) => {
-        result.nodeIds.forEach((n) => {
-          DOM.getAttributes({nodeId: n}).then((node) => {
+        return result.nodeIds.forEach((n) => {
+          return DOM.getAttributes({nodeId: n}).then((node) => {
             node.attributes.forEach((attr) => {
               DOM.setAttributeValue({
                 nodeId: n,
@@ -60,8 +60,8 @@ CDP((client) => {
               });
             });
           });
+          return DOM.getDocument();
         });
-        return DOM.getDocument();
       }).then(()=>{
         return DOM.getOuterHTML({nodeId: dom.root.nodeId});
       }).then((html) => {
